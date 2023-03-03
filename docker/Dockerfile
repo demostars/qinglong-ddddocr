@@ -1,13 +1,13 @@
-FROM python:3.10-alpine as builder
+FROM python:3.10-slim as builder
 COPY package.json .npmrc pnpm-lock.yaml /tmp/build/
 RUN set -x \
-    && apk update \
-    && apk add nodejs npm git \
+    && apt-get update \
+    && apt-get install -y nodejs npm git \
     && npm i -g pnpm \
     && cd /tmp/build \
     && pnpm install --prod
 
-FROM python:3.10-alpine
+FROM python:3.10-slim
 
 ARG QL_MAINTAINER="whyour"
 LABEL maintainer="${QL_MAINTAINER}"
@@ -24,25 +24,24 @@ ENV PNPM_HOME=/root/.local/share/pnpm \
     QL_BRANCH=${QL_BRANCH}
 
 RUN set -x \
-    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
-    && apk update -f \
-    && apk upgrade \
-    && apk --no-cache add -f bash \
-                             coreutils \
-                             moreutils \
-                             git \
-                             curl \
-                             wget \
-                             tzdata \
-                             perl \
-                             openssl \
-                             nginx \
-                             nodejs \
-                             jq \
-                             openssh \
-                             npm \
-    && rm -rf /var/cache/apk/* \
-    && apk update \
+    && apt-get update -y -qq \
+    && apt-get upgrade -y -qq \
+    && apt-get --no-install-recommends install -y -qq bash \
+        coreutils \
+        moreutils \
+        git \
+        curl \
+        wget \
+        tzdata \
+        perl \
+        openssl \
+        nginx \
+        nodejs \
+        jq \
+        openssh-client \
+        npm \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && git config --global user.email "qinglong@@users.noreply.github.com" \
