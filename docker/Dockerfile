@@ -1,4 +1,6 @@
-FROM python:3.10-alpine as builder
+# 使用带DDDDOCR的Alpine镜像为基础 https://hub.docker.com/r/a76yyyy/ddddocr
+
+FROM a76yyyy/ddddocr as builder
 COPY package.json .npmrc pnpm-lock.yaml /tmp/build/
 RUN set -x \
     && apk update \
@@ -7,7 +9,7 @@ RUN set -x \
     && cd /tmp/build \
     && pnpm install --prod
 
-FROM python:3.10-alpine
+FROM a76yyyy/ddddocr
 
 ARG QL_MAINTAINER="whyour"
 LABEL maintainer="${QL_MAINTAINER}"
